@@ -25,7 +25,3 @@ data/interim/
 build/
 dist/
 *.egg-info/
-
-# Planning documents and local notes
-collisionguard_feasibility_and_implementation_plan.md
-project_explanation.md
