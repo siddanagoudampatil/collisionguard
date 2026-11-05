@@ -4,6 +4,7 @@ from collisionguard.data.dataset import (
     ConcurrentTaskPair,
     TaskRecord,
     build_concurrent_pairs,
+    clean_posix_path,
     sanitize_task_record,
     verify_temporal_validity,
 )
@@ -18,6 +19,7 @@ __all__ = [
     "find_merge_base",
     "TaskRecord",
     "ConcurrentTaskPair",
+    "clean_posix_path",
     "verify_temporal_validity",
     "sanitize_task_record",
     "build_concurrent_pairs",

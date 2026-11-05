@@ -8,8 +8,29 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
+def clean_posix_path(path: str) -> str:
+    """Normalize file path to POSIX and strip git status / conflict marker artifacts."""
+    if not path:
+        return ""
+    clean = str(path).replace("\\", "/").strip().strip("'\"")
+
+    # Strip diff / git merge status prefixes
+    if "\t" in clean:
+        clean = clean.split("\t")[-1].strip()
+
+    if "CONFLICT" in clean and " in " in clean:
+        clean = clean.split(" in ")[-1].strip()
+
+    if clean.startswith("Auto-merging "):
+        clean = clean.replace("Auto-merging ", "").strip()
+
+    clean = clean.lstrip("/")
+    return clean
+
+
 @dataclass(frozen=True)
 class TaskRecord:
+
     """Represents an atomic issue-linked task execution instance."""
 
     task_id: str
@@ -81,6 +102,9 @@ def sanitize_task_record(raw: Dict[str, Any]) -> Optional[TaskRecord]:
         logger.debug("Rejecting task %s with empty issue title and body", raw.get("pr_id"))
         return None
 
+    raw_modified = list(raw.get("modified_files") or [])
+    clean_modified = [clean_posix_path(p) for p in raw_modified if clean_posix_path(p)]
+
     return TaskRecord(
         task_id=str(raw.get("pr_id") or raw.get("task_id")),
         repo_url=str(raw.get("repo_url") or "").strip(),
@@ -91,7 +115,7 @@ def sanitize_task_record(raw: Dict[str, Any]) -> Optional[TaskRecord]:
         issue_created_at=pd.to_datetime(issue_time, utc=True),
         pr_created_at=pd.to_datetime(pr_time, utc=True),
         pr_closed_at=pd.to_datetime(raw.get("pr_closed_at") or pr_time, utc=True),
-        modified_files=list(raw.get("modified_files") or []),
+        modified_files=clean_modified,
     )
 
 

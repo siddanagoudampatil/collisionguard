@@ -18,6 +18,20 @@ class MergeReplayResult:
     error_message: Optional[str] = None
 
 
+def _clean_conflict_path(path: str) -> str:
+    """Normalize conflict file path and strip merge status artifacts."""
+    if not path:
+        return ""
+    clean = str(path).replace("\\", "/").strip()
+    if "\t" in clean:
+        clean = clean.split("\t")[-1].strip()
+    if "CONFLICT" in clean and " in " in clean:
+        clean = clean.split(" in ")[-1].strip()
+    if clean.startswith("Auto-merging "):
+        clean = clean.replace("Auto-merging ", "").strip()
+    return clean.lstrip("/")
+
+
 def find_merge_base(repo_dir: str | Path, commit_a: str, commit_b: str) -> Optional[str]:
     """Identify lowest common ancestor commit for two Git revisions."""
     cmd = ["git", "-C", str(repo_dir), "merge-base", commit_a, commit_b]
@@ -90,9 +104,10 @@ def evaluate_merge_tree(repo_dir: str | Path, commit_a: str, commit_b: str) -> M
             conflicting_files = [line for line in raw_lines if not (len(line) == 40 and all(c in "0123456789abcdef" for c in line))]
             if not conflicting_files and raw_lines:
                 conflicting_files = raw_lines[1:] if len(raw_lines) > 1 else raw_lines
+            cleaned = [_clean_conflict_path(f) for f in conflicting_files if _clean_conflict_path(f)]
             return MergeReplayResult(
                 label=1,
-                conflict_files=sorted(list(set(conflicting_files))),
+                conflict_files=sorted(list(set(cleaned))),
                 base_commit=base,
                 is_valid=True,
             )
@@ -137,9 +152,10 @@ def evaluate_merge_tree(repo_dir: str | Path, commit_a: str, commit_b: str) -> M
                         conflict_files.append(parts[-1])
                         break
 
+        cleaned = [_clean_conflict_path(f) for f in conflict_files if _clean_conflict_path(f)]
         return MergeReplayResult(
             label=1,
-            conflict_files=sorted(list(set(conflict_files))),
+            conflict_files=sorted(list(set(cleaned))),
             base_commit=base,
             is_valid=True,
         )

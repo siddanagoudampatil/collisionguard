@@ -5,9 +5,36 @@ import pytest
 from collisionguard.data.dataset import (
     TaskRecord,
     build_concurrent_pairs,
+    clean_posix_path,
     sanitize_task_record,
     verify_temporal_validity,
 )
+
+
+def test_clean_posix_path():
+    assert clean_posix_path("src\\utils\\helpers.py") == "src/utils/helpers.py"
+    assert clean_posix_path("/leading/slash.py") == "leading/slash.py"
+    assert clean_posix_path("M\tsrc/modified.py") == "src/modified.py"
+    assert clean_posix_path("CONFLICT (content): Merge conflict in lib/core.py") == "lib/core.py"
+    assert clean_posix_path("Auto-merging src/index.ts") == "src/index.ts"
+
+
+def test_sanitize_task_record_path_normalization():
+    raw = {
+        "pr_id": "PR_200",
+        "repo_url": "https://github.com/org/repo",
+        "head_sha": "abc1234",
+        "issue_id": "ISSUE_200",
+        "issue_title": "Update paths",
+        "issue_body": "Normalize Windows paths",
+        "issue_created_at": "2026-01-01T10:00:00Z",
+        "pr_created_at": "2026-01-01T12:00:00Z",
+        "modified_files": ["src\\windows\\file.py", "M\tsrc/diff.py"],
+    }
+    rec = sanitize_task_record(raw)
+    assert rec is not None
+    assert rec.modified_files == ["src/windows/file.py", "src/diff.py"]
+
 
 
 def test_verify_temporal_validity():

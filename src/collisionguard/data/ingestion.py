@@ -102,6 +102,14 @@ def stream_commit_records(
             chunk = cursor.fetch_df_chunk(batch_size)
             if chunk.empty:
                 break
+            if "file_path" in chunk.columns:
+                chunk["file_path"] = (
+                    chunk["file_path"]
+                    .astype(str)
+                    .str.replace("\\", "/", regex=False)
+                    .str.strip()
+                    .str.lstrip("/")
+                )
             yield chunk
     finally:
         if should_close:
