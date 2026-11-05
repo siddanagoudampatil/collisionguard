@@ -82,3 +82,62 @@ def test_fpgrowth_transaction_filtering_and_rule_mining():
     conf_zero, lift_zero = miner.get_cochange_metrics("non_existent.py", ["src/auth.py"])
     assert conf_zero == 0.0
     assert lift_zero == 0.0
+
+
+def test_extract_candidate_features():
+    from collisionguard.localization.ranker import (
+        FEATURE_COLUMNS,
+        extract_candidate_features,
+    )
+    from collisionguard.localization.retrieval import CandidateRetrievalResult
+
+    retrieval_res = CandidateRetrievalResult(
+        candidate_files=["package.json", "tests/test_parser.py", "src/parser.py"],
+        bm25_scores={"src/parser.py": 12.5, "package.json": 0.5},
+        dense_similarities={"src/parser.py": 0.75, "package.json": 0.1},
+    )
+
+    feat = extract_candidate_features(
+        candidate_path="package.json",
+        issue_title="Update package.json dependencies",
+        issue_body="Bump version and install packages",
+        retrieval_result=retrieval_res,
+    )
+
+    assert len(feat.features) == 15
+    assert len(feat.features) == len(FEATURE_COLUMNS)
+    assert feat.features["is_manifest"] == 1.0
+    assert feat.features["exact_path_mention"] == 1.0
+
+    test_feat = extract_candidate_features(
+        candidate_path="tests/test_parser.py",
+        issue_title="Bug in parser",
+        issue_body="Parser error",
+        retrieval_result=retrieval_res,
+    )
+    assert test_feat.features["is_test"] == 1.0
+    assert test_feat.features["is_manifest"] == 0.0
+
+
+def test_footprint_ranker_fit_and_predict():
+    import numpy as np
+    from collisionguard.localization.ranker import FEATURE_COLUMNS, FootprintRanker
+
+    # Synthetic dataset: 2 queries with 5 candidates each
+    np.random.seed(42)
+    n_samples = 10
+    X = np.random.randn(n_samples, len(FEATURE_COLUMNS))
+    # Binary relevance target: 1 if ground-truth modified, 0 otherwise
+    y = np.array([1, 0, 0, 0, 0, 1, 1, 0, 0, 0], dtype=np.int32)
+    groups = [5, 5]
+
+    ranker = FootprintRanker(n_estimators=10, random_state=42)
+    ranker.fit(X, y, groups)
+
+    scores = ranker.predict_scores(X)
+    assert len(scores) == n_samples
+
+    probs = ranker.predict_probabilities(X)
+    assert len(probs) == n_samples
+    assert np.all((probs >= 0.0) & (probs <= 1.0))
+
