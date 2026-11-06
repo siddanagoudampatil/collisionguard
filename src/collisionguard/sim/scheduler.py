@@ -53,25 +53,50 @@ class SimulationMetrics:
         }
 
 
-def prepare_sim_tasks(tasks: List[TaskRecord]) -> List[SimTask]:
+def _get_task_times(t: Any) -> Tuple[datetime, datetime]:
+    """Extract open and close/merge timestamps supporting both TaskRecord and generic representations."""
+    t_open = getattr(t, "pr_created_at", getattr(t, "open_time", None))
+    t_close = getattr(t, "pr_closed_at", getattr(t, "merge_time", None))
+
+    if t_open is None:
+        t_open = datetime(2025, 1, 1, 0, 0, 0)
+    elif hasattr(t_open, "to_pydatetime"):
+        t_open = t_open.to_pydatetime()
+
+    if t_close is None:
+        t_close = t_open
+    elif hasattr(t_close, "to_pydatetime"):
+        t_close = t_close.to_pydatetime()
+
+    # Remove tzinfo for uniform subtraction
+    if hasattr(t_open, "tzinfo") and t_open.tzinfo is not None:
+        t_open = t_open.replace(tzinfo=None)
+    if hasattr(t_close, "tzinfo") and t_close.tzinfo is not None:
+        t_close = t_close.replace(tzinfo=None)
+
+    return t_open, t_close
+
+
+def prepare_sim_tasks(tasks: List[Any]) -> List[SimTask]:
     """Convert TaskRecord objects to SimTask instances sorted by open timestamp."""
     if not tasks:
         return []
 
-    sorted_tasks = sorted(tasks, key=lambda t: t.open_time)
-    epoch = sorted_tasks[0].open_time
+    sorted_tasks = sorted(tasks, key=lambda t: _get_task_times(t)[0])
+    epoch, _ = _get_task_times(sorted_tasks[0])
 
     sim_tasks: List[SimTask] = []
     for t in sorted_tasks:
-        arrival = max(0.0, (t.open_time - epoch).total_seconds() / 3600.0)
-        dur = max(0.01, (t.merge_time - t.open_time).total_seconds() / 3600.0)
+        t_open, t_close = _get_task_times(t)
+        arrival = max(0.0, (t_open - epoch).total_seconds() / 3600.0)
+        dur = max(0.01, (t_close - t_open).total_seconds() / 3600.0)
         sim_tasks.append(
             SimTask(
-                task_id=t.task_id,
+                task_id=str(t.task_id),
                 arrival_time=float(arrival),
                 duration_hours=float(dur),
-                modified_files=list(t.modified_files),
-                repo_url=t.repo_url,
+                modified_files=list(getattr(t, "modified_files", [])),
+                repo_url=str(getattr(t, "repo_url", "")),
             )
         )
     return sim_tasks
