@@ -1,5 +1,9 @@
-"""Stage 2: Pairwise conflict risk modeling modules."""
+"""Stage 2: Pairwise conflict risk modeling and calibration modules."""
 
+from collisionguard.conflict.calibration import (
+    IsotonicProbabilityCalibrator,
+    compute_expected_calibration_error,
+)
 from collisionguard.conflict.model import (
     MONOTONE_CONSTRAINTS,
     ConflictRiskClassifier,
@@ -16,5 +20,6 @@ __all__ = [
     "PairwiseOverlapFeatures",
     "compute_pairwise_overlap_features",
     "ConflictRiskClassifier",
+    "IsotonicProbabilityCalibrator",
+    "compute_expected_calibration_error",
 ]
-
