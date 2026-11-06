@@ -5,6 +5,7 @@ from collisionguard.sim.scheduler import (
     SimTask,
     SimulationMetrics,
     prepare_sim_tasks,
+    simulate_random_holding_baseline,
     simulate_sweep,
 )
 
@@ -14,4 +15,5 @@ __all__ = [
     "SimulationMetrics",
     "prepare_sim_tasks",
     "simulate_sweep",
+    "simulate_random_holding_baseline",
 ]
