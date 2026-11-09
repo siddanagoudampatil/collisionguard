@@ -23,7 +23,9 @@ dependencies = [
     "simpy>=4.1.0",
     "scikit-learn>=1.4.0",
     "pandas>=2.0.0",
-    "numpy>=1.24.0"
+    "numpy>=1.24.0",
+    "shap>=0.45.0",
+    "matplotlib>=3.7.0"
 ]
 
 [project.optional-dependencies]
