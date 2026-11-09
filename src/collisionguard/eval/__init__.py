@@ -1,4 +1,4 @@
-"""Evaluation, validation splitting, baselines, and metric modules."""
+"""Evaluation, validation splitting, baselines, interpretability, and metric modules."""
 
 from collisionguard.eval.baselines import (
     BaseConflictBaseline,
@@ -7,6 +7,7 @@ from collisionguard.eval.baselines import (
     TextSimilarityBaseline,
     TrueFileFootprintOracle,
 )
+from collisionguard.eval.interpretability import ConflictRiskExplainer
 from collisionguard.eval.metrics import (
     compute_classification_metrics,
     compute_pareto_frontier,
@@ -24,6 +25,7 @@ __all__ = [
     "TextSimilarityBaseline",
     "BM25OverlapBaseline",
     "TrueFileFootprintOracle",
+    "ConflictRiskExplainer",
     "compute_classification_metrics",
     "compute_pareto_frontier",
 ]
