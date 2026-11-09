@@ -1,4 +1,4 @@
-"""Evaluation, validation splitting, baselines, interpretability, taxonomy, and metric modules."""
+"""Evaluation, validation splitting, baselines, interpretability, taxonomy, leakage, and metric modules."""
 
 from collisionguard.eval.baselines import (
     BaseConflictBaseline,
@@ -8,6 +8,7 @@ from collisionguard.eval.baselines import (
     TrueFileFootprintOracle,
 )
 from collisionguard.eval.interpretability import ConflictRiskExplainer
+from collisionguard.eval.leakage import LeakageAuditor
 from collisionguard.eval.metrics import (
     compute_classification_metrics,
     compute_pareto_frontier,
@@ -36,6 +37,7 @@ __all__ = [
     "classify_pair_conflict",
     "compute_taxonomy_metrics",
     "parse_merge_tree_conflicts",
+    "LeakageAuditor",
     "compute_classification_metrics",
     "compute_pareto_frontier",
 ]
