@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 MANIFEST_FILENAMES: Set[str] = {
     "package.json",
     "package-lock.json",
+    "yarn.lock",
     "pom.xml",
     "cargo.toml",
     "cargo.lock",

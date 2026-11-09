@@ -19,12 +19,32 @@ from collisionguard.eval.split import RepositoryGroupKFold
 
 def test_is_manifest_file():
     assert is_manifest_file("package.json")
+    assert is_manifest_file("package-lock.json")
+    assert is_manifest_file("yarn.lock")
     assert is_manifest_file("frontend/package.json")
     assert is_manifest_file("Cargo.toml")
+    assert is_manifest_file("Cargo.lock")
+    assert is_manifest_file("setup.py")
     assert is_manifest_file("pyproject.toml")
+    assert is_manifest_file("go.mod")
+    assert is_manifest_file("requirements.txt")
     assert is_manifest_file("nested/path/pom.xml")
     assert not is_manifest_file("src/main.py")
     assert not is_manifest_file("README.md")
+
+
+def test_pairwise_overlap_identical_prob_one_returns_exact_count():
+    files = [f"src/module_{i}.py" for i in range(5)]
+    probs_a = {f: 1.0 for f in files}
+    probs_b = {f: 1.0 for f in files}
+
+    features = compute_pairwise_overlap_features(probs_a, probs_b)
+    feat_dict = features.features
+
+    assert pytest.approx(feat_dict["expected_overlap"]) == 5.0
+    assert pytest.approx(feat_dict["p_any_overlap"]) == 1.0
+    assert pytest.approx(feat_dict["jaccard_candidate_overlap"]) == 1.0
+    assert pytest.approx(feat_dict["max_single_file_overlap"]) == 1.0
 
 
 def test_pairwise_overlap_disjoint_candidates():
