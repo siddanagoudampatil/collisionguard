@@ -1,4 +1,4 @@
-"""Evaluation, validation splitting, baselines, interpretability, and metric modules."""
+"""Evaluation, validation splitting, baselines, interpretability, taxonomy, and metric modules."""
 
 from collisionguard.eval.baselines import (
     BaseConflictBaseline,
@@ -16,6 +16,12 @@ from collisionguard.eval.split import (
     RepositoryGroupKFold,
     generate_out_of_fold_footprints,
 )
+from collisionguard.eval.taxonomy import (
+    ConflictCategory,
+    classify_pair_conflict,
+    compute_taxonomy_metrics,
+    parse_merge_tree_conflicts,
+)
 
 __all__ = [
     "RepositoryGroupKFold",
@@ -26,6 +32,10 @@ __all__ = [
     "BM25OverlapBaseline",
     "TrueFileFootprintOracle",
     "ConflictRiskExplainer",
+    "ConflictCategory",
+    "classify_pair_conflict",
+    "compute_taxonomy_metrics",
+    "parse_merge_tree_conflicts",
     "compute_classification_metrics",
     "compute_pareto_frontier",
 ]
